@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:esbutils="http://www.mulesoft.org/schema/mule/esbutils"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.7.3"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-current.xsd 
+http://www.mulesoft.org/schema/mule/esbutils http://www.mulesoft.org/schema/mule/esbutils/current/mule-esbutils.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+
+    <context:property-placeholder location="mule-app.properties" />
+
+	<flow name="main-flow">
+        <component doc:name="RouteFactory">
+            <singleton-object class="demo.RouteFactory">
+              <property key="partnerCount" value="${partner-count}"/>
+            </singleton-object>
+        </component>
+    </flow>
+</mule>

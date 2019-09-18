@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:s3="http://www.mulesoft.org/schema/mule/s3" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+
+    <s3:config name="Amazon_S3_GlobalConnector" accessKey="${s3.access-key}" secretKey="${s3.secret-key}" doc:name="Amazon S3"/>
+    
+    <flow name="parameterised-mule-app-template" processingStrategy="synchronous">
+        <poll doc:name="Poll">
+            <fixed-frequency-scheduler frequency="20" timeUnit="SECONDS" startDelay="10"/>
+            <logger message="starting flow ...." level="INFO" doc:name="Log Start"/>
+        </poll>
+      
+        <s3:list-objects config-ref="Amazon_S3_GlobalConnector" bucketName="test-partner-1" doc:name="List objects"/>
+
+        <foreach collection="#[payload]" doc:name="For Each">
+            <enricher doc:name="Message Enricher" target="#[flowVars['copyObjectResult']]">
+                <s3:copy-object config-ref="Amazon_S3_GlobalConnector" destinationBucketName="test-system-1" destinationKey="#[payload.getKey()]" sourceBucketName="#[payload.getBucketName()]" sourceKey="#[payload.getKey()]" doc:name="Copy object"/>
+            </enricher>
+            <s3:delete-object config-ref="Amazon_S3_GlobalConnector" bucketName="test-partner-1" key="#[payload.getKey()]" doc:name="Delete object"/>
+        </foreach>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="#[message]" level="ERROR" doc:name="Log Error"/>
+        </catch-exception-strategy>
+    </flow>
+</mule>
